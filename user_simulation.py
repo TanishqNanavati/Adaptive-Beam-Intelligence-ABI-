@@ -2,20 +2,90 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import os
-from config import GRID_SIZE, NUM_USERS, RANDOM_SEED
+from config import (
+    GRID_SIZE,
+    NUM_USERS,
+    RANDOM_SEED,
+    ENABLE_CLUSTER,
+    CLUSTER_CENTER_X,
+    CLUSTER_CENTER_Y,
+    CLUSTER_SPREAD,
+    CLUSTER_RATIO
+)
 
-def generate_users(num_users=NUM_USERS,grid_size=GRID_SIZE,seed=RANDOM_SEED):
+def generate_users(
+    num_users=NUM_USERS,
+    grid_size=GRID_SIZE,
+    seed=RANDOM_SEED
+):
     """
-    Generate random user positions within the grid.
-    
+    Generate user positions.
+
+    Supports:
+    - Uniform random users
+    - Clustered hotspot users
+
     Returns:
-        users (np.ndarray) : Array of users of shape
-                            (num_users,2) where each 
-                            row is (x,y)
+        np.ndarray: User positions
     """
-    
+
     rng = np.random.default_rng(seed)
-    users = rng.uniform(0,grid_size,size=(num_users,2))
+
+    # -----------------------------------
+    # Uniform Distribution
+    # -----------------------------------
+    if not ENABLE_CLUSTER:
+
+        users = rng.uniform(
+            0,
+            grid_size,
+            size=(num_users, 2)
+        )
+
+        print("[✓] Generated uniformly distributed users")
+
+        return users
+
+    # -----------------------------------
+    # Clustered Distribution
+    # -----------------------------------
+    cluster_users = int(num_users * CLUSTER_RATIO)
+
+    random_users = num_users - cluster_users
+
+    # Generate clustered users
+    cluster_x = rng.normal(
+        CLUSTER_CENTER_X,
+        CLUSTER_SPREAD,
+        cluster_users
+    )
+
+    cluster_y = rng.normal(
+        CLUSTER_CENTER_Y,
+        CLUSTER_SPREAD,
+        cluster_users
+    )
+
+    clustered = np.column_stack((cluster_x, cluster_y))
+
+    # Generate remaining random users
+    random_part = rng.uniform(
+        0,
+        grid_size,
+        size=(random_users, 2)
+    )
+
+    # Combine both
+    users = np.vstack((clustered, random_part))
+
+    # Keep users inside grid boundaries
+    users = np.clip(users, 0, grid_size)
+
+    print(
+        f"[✓] Generated clustered users "
+        f"({cluster_users} hotspot + {random_users} random)"
+    )
+
     return users
 
 def plot_users(users,save_path="outputs/users.png"):

@@ -11,3 +11,13 @@ SAT_STEPS = 10            # Number of movement steps to simulate
 
 # Beam parameters
 BEAM_RADIUS = 30   # km
+
+# User hotspot parameters
+ENABLE_CLUSTER = True
+
+CLUSTER_CENTER_X = 80
+CLUSTER_CENTER_Y = 20
+
+CLUSTER_SPREAD = 10
+
+CLUSTER_RATIO = 0.7
